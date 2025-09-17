@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Ghiblify Me! – Anime Your Selfie</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background-color: #fefce8; }
+  </style>
+</head>
+<body class="flex flex-col items-center justify-center min-h-screen p-4">
+
+  <h1 class="text-3xl font-bold mb-4 text-pink-600">🎨 Ghiblify Me!</h1>
+
+  <!-- Camera Section -->
+  <video id="video" autoplay playsinline class="w-80 h-60 border rounded shadow mb-4"></video>
+  <canvas id="canvas" class="hidden"></canvas>
+  <img id="output" class="hidden mt-4 rounded shadow w-80" alt="Ghibli-style output" />
+
+  <div class="space-x-2 mb-4">
+    <button onclick="capturePhoto()" class="bg-indigo-600 text-white px-4 py-2 rounded">📸 Capture</button>
+    <button onclick="uploadPhoto()" class="bg-green-600 text-white px-4 py-2 rounded">🎨 Ghiblify</button>
+  </div>
+
+  <div id="status" class="text-gray-600 mt-2"></div>
+
+  <script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const output = document.getElementById('output');
+    const statusEl = document.getElementById('status');
+
+    // Start camera
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => { video.srcObject = stream; })
+      .catch(err => alert("Camera access denied."));
+
+    function capturePhoto() {
+      const ctx = canvas.getContext('2d');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      canvas.classList.remove("hidden");
+      statusEl.textContent = "📷 Photo captured!";
+    }
+
+    async function uploadPhoto() {
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg'));
+      const formData = new FormData();
+      formData.append('image', blob);
+
+      statusEl.textContent = "🎨 Sending to AI model... Please wait...";
+
+      // 🧠 Replace with your Replicate API call or backend endpoint
+      const response = await fetch('https://your-backend-api.com/ghibli', {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await response.json();
+      output.src = data.image_url;
+      output.classList.remove("hidden");
+      statusEl.textContent = "✅ Done! Here's your Ghibli-style photo.";
+    }
+  </script>
+
+</body>
+</html>
